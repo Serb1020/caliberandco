@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #F9F7F5;
+  color: #1E1812;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #F9F7F5; }
+::-webkit-scrollbar-thumb { background: #E8E0D5; border-radius: 3px; }
+
+input, textarea, select, button {
+  font-family: 'Inter', sans-serif;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #C9933A !important;
+  box-shadow: 0 0 0 3px rgba(201, 147, 58, 0.15);
+}
+
+a { text-decoration: none; color: inherit; }
