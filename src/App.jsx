@@ -846,6 +846,45 @@ function Profile({ user, setUser, showAuth }) {
 }
 
 // ============================================================
+// POST RESALE MODAL COMPONENT
+// ============================================================
+function PostResaleModal({ user, itemTypeOpts, onClose, onSaved }) {
+  const [form,setForm]=useState({title:"",description:"",item_type:"watch",brand:"",price:"",condition:"good",images:[],was_repaired:true,repair_notes:"",location:""})
+  const [saving,setSaving]=useState(false)
+  const handlePost = async (e) => {
+    e.preventDefault(); setSaving(true)
+    try {
+      const item = await resaleApi.create({...form,price:parseFloat(form.price),status:"available",created_by:user.email})
+      onSaved(item)
+    } finally { setSaving(false) }
+  }
+  return (
+    <Modal open title="List an Item for Sale" onClose={onClose}>
+      <form onSubmit={handlePost} style={{display:"flex",flexDirection:"column",gap:13}}>
+        <Input label="Title *" placeholder="e.g. Restored Omega Seamaster" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required />
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Select label="Item Type" value={form.item_type} onChange={v=>setForm({...form,item_type:v})} options={itemTypeOpts} />
+          <Input label="Brand" placeholder="e.g. Omega" value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})} />
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Input label="Asking Price ($) *" type="number" min="0" placeholder="1200" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} required />
+          <Select label="Condition" value={form.condition} onChange={v=>setForm({...form,condition:v})} options={[{value:"excellent",label:"Excellent"},{value:"very_good",label:"Very Good"},{value:"good",label:"Good"},{value:"fair",label:"Fair"}]} />
+        </div>
+        <Textarea label="Description *" placeholder="Describe the item..." value={form.description} onChange={e=>setForm({...form,description:e.target.value})} required />
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 13px",background:t.elevated,borderRadius:10}}>
+          <input type="checkbox" id="wr" checked={form.was_repaired} onChange={e=>setForm({...form,was_repaired:e.target.checked})} style={{accentColor:t.gold,width:16,height:16}} />
+          <label htmlFor="wr" style={{fontSize:13,color:t.muted,cursor:"pointer",fontWeight:500}}>Professionally repaired/restored</label>
+        </div>
+        {form.was_repaired&&<Input label="Repair Notes" placeholder="e.g. Full movement service" value={form.repair_notes} onChange={e=>setForm({...form,repair_notes:e.target.value})} />}
+        <Input label="Location" placeholder="City, State" value={form.location} onChange={e=>setForm({...form,location:e.target.value})} />
+        <div><label style={{fontSize:12,color:t.muted,fontWeight:500,display:"block",marginBottom:8}}>Photos</label><ImageUploader images={form.images} onChange={imgs=>setForm({...form,images:imgs})} /></div>
+        <Btn type="submit" disabled={!form.title||!form.price} loading={saving} style={{width:"100%"}}>Post Listing</Btn>
+      </form>
+    </Modal>
+  )
+}
+
+// ============================================================
 // PAGE: RESALE
 // ============================================================
 function Resale({ user, showAuth }) {
@@ -926,41 +965,7 @@ function Resale({ user, showAuth }) {
       </section>
 
       {/* Post Resale Modal */}
-      {showPost&&(()=>{
-        const [form,setForm]=useState({title:"",description:"",item_type:"watch",brand:"",price:"",condition:"good",images:[],was_repaired:true,repair_notes:"",location:""})
-        const [saving,setSaving]=useState(false)
-        const handlePost = async (e) => {
-          e.preventDefault(); setSaving(true)
-          try {
-            const item = await resaleApi.create({...form,price:parseFloat(form.price),status:"available",created_by:user.email})
-            setItems(prev=>[item,...prev]); setShowPost(false)
-          } finally { setSaving(false) }
-        }
-        return (
-          <Modal open title="List an Item for Sale" onClose={()=>setShowPost(false)}>
-            <form onSubmit={handlePost} style={{display:"flex",flexDirection:"column",gap:13}}>
-              <Input label="Title *" placeholder="e.g. Restored Omega Seamaster" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required />
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                <Select label="Item Type" value={form.item_type} onChange={v=>setForm({...form,item_type:v})} options={itemTypeOpts} />
-                <Input label="Brand" placeholder="e.g. Omega" value={form.brand} onChange={e=>setForm({...form,brand:e.target.value})} />
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                <Input label="Asking Price ($) *" type="number" min="0" placeholder="1200" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} required />
-                <Select label="Condition" value={form.condition} onChange={v=>setForm({...form,condition:v})} options={[{value:"excellent",label:"Excellent"},{value:"very_good",label:"Very Good"},{value:"good",label:"Good"},{value:"fair",label:"Fair"}]} />
-              </div>
-              <Textarea label="Description *" placeholder="Describe the item..." value={form.description} onChange={e=>setForm({...form,description:e.target.value})} required />
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 13px",background:t.elevated,borderRadius:10}}>
-                <input type="checkbox" id="wr" checked={form.was_repaired} onChange={e=>setForm({...form,was_repaired:e.target.checked})} style={{accentColor:t.gold,width:16,height:16}} />
-                <label htmlFor="wr" style={{fontSize:13,color:t.muted,cursor:"pointer",fontWeight:500}}>Professionally repaired/restored</label>
-              </div>
-              {form.was_repaired&&<Input label="Repair Notes" placeholder="e.g. Full movement service" value={form.repair_notes} onChange={e=>setForm({...form,repair_notes:e.target.value})} />}
-              <Input label="Location" placeholder="City, State" value={form.location} onChange={e=>setForm({...form,location:e.target.value})} />
-              <div><label style={{fontSize:12,color:t.muted,fontWeight:500,display:"block",marginBottom:8}}>Photos</label><ImageUploader images={form.images} onChange={imgs=>setForm({...form,images:imgs})} /></div>
-              <Btn type="submit" disabled={!form.title||!form.price} loading={saving} style={{width:"100%"}}>Post Listing</Btn>
-            </form>
-          </Modal>
-        )
-      })()}
+      {showPost&&<PostResaleModal user={user} itemTypeOpts={itemTypeOpts} onClose={()=>setShowPost(false)} onSaved={(item)=>{setItems(prev=>[item,...prev]);setShowPost(false)}} />}
 
       {/* Item Detail Modal */}
       {selectedItem&&(
@@ -1073,4 +1078,3 @@ export default function App() {
     </>
   )
 }
- 
